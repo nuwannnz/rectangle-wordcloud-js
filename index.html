@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+
+  <style>
+    .word{
+    display: inline-block;
+    border: 1px solid #333;
+  }
+  </style>
+</head>
+
+<body>
+
+  <div id="w" style="width: 1000px; height: 500px;position:relative">
+  </div>
+
+  <br><br>
+  <span id="sp">
+
+  </span>
+
+
+
+  <script src="./wordcloud_v4.js"></script>
+  <script type="text/javascript">
+
+    let wordList = [
+      ["hello", 5],
+      ["world", 3],
+      ["maths", 4],
+      ["econ", 7],
+      ["business", 3],
+      ["ict", 6],
+      ["finance", 4],
+      ["bio", 5]
+    ];
+
+    let cloudElement = document.getElementById('w');
+    let _wordCloud = new WordCloud(w, wordList);
+
+    // _wordCloud.render();
+
+  </script>
+</body>
+
+</html>
