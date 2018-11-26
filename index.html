@@ -15,7 +15,10 @@
 
 <body>
 
-  <div id="w" style="width: 1000px; height: 500px;position:relative">
+  <div id="w1" style="width: 1200px; height: 500px;position:relative">
+  </div>
+
+  <div id="w2" style="width: 600px; height: 500px;position:relative">
   </div>
 
   <br><br>
@@ -25,8 +28,7 @@
 
 
 
-  <script src="./wordcloud_v4.js"></script>
-  <script type="text/javascript">
+  <script type="text/javascript" async="true">
 
     let wordList = [
       ["hello", 5],
@@ -39,12 +41,32 @@
       ["bio", 5]
     ];
 
-    let cloudElement = document.getElementById('w');
-    let _wordCloud = new WordCloud(w, wordList);
+    let w1 = document.getElementById('w1');
+    let w2 = document.getElementById('w2');
+
+    window.addEventListener('load', function (event) {
+      // <!-- 
+
+      //       let _wordCloud1 = new Promise((r) => { -->
+
+      new WordCloud(document.getElementById('w1'), wordList);
+      // new WordCloud(document.getElementById('w2'), wordList);
+      //   r();
+      // });
+
+      // let _wordCloud2 = new Promise((r) => {
+
+      //   r();
+      // });
+
+
+    });
+
 
     // _wordCloud.render();
 
   </script>
+  <script src="./wordcloud_v4.js"></script>
 </body>
 
 </html>

@@ -32,7 +32,7 @@ function WordCloud(parentElement, words) {
     };
 
     var getFontSize = function (weight) {
-        return weight * settings.weightFactor;
+        return (weight - getRandomNum(2)) * settings.weightFactor;
     }
 
     var getFontSizeForWidth = function (word, width) {
@@ -47,6 +47,8 @@ function WordCloud(parentElement, words) {
 
         while (wWidth >= width) {
             fSize -= 20;
+            if (fSize <= 0) { break; }
+
             fctx.font = fSize + 'px' + ' sans-serif';
             wWidth = Math.floor(fctx.measureText(word).width);
         }
@@ -96,9 +98,6 @@ function WordCloud(parentElement, words) {
 
 
 
-
-
-
     let getTopFreePosition = (x) => {
         let pos = 0;
         for (let row = 0; row < grid.length; row++) {
@@ -132,38 +131,16 @@ function WordCloud(parentElement, words) {
             y: -1
         };
         ROW: for (let row = 0; row < grid.length; row++) {
-            COL: for (let col = lastX; col < grid[0].length; col++) {
+            COL: for (let col = 0; col < grid[0].length; col++) {
                 if (grid[row][col]) {
-                    // check for width;
-                    if (col + width > grid[0].length) {
-                        // width overflow
-                        row = row < (grid.length - 1) ? row + 1 : row;
-                        continue;
-                    }
-                    if (row + height > grid.length) {
-                        // height overflow;
-                        break ROW;
-                    }
 
-                    for (let _r = row; _r < (row + height); _r++) {
-                        for (let _c = col; _c < (col + width); _c++) {
-                            if (!grid[_r][_c]) {
-                                // cannot fix the word
-                                continue COL;
-                            }
-                        }
-                    }
                     pos.x = col;
                     pos.y = row;
-                    break;
+                    break ROW;
                 }
+
             }
-            if (pos.x !== -1) {
-                lastX = pos.x;
-                lastY = pos.y;
-                console.log(`last y: ${lastY}, last x: ${lastX}`);
-                break;
-            }
+
         }
         return pos;
     }
@@ -183,17 +160,26 @@ function WordCloud(parentElement, words) {
             COL: for (let col = position.startX; col < position.endX; col++) {
                 if (!grid[row][col]) {
                     data.canFix = false;
-                    data.endX = col === 0 ? col : col - 1;
-                    // break;
-                    data.endY = row;
-                    break ROW;
+                    data.endX = col;
+
+                    for (let _r = row; _r < y; _r++) {
+                        if (!grid[_r][col]) {
+                            data.endY = _r;
+                            break ROW;
+                        }
+                    }
+                    data.endY = y;
+                    // data.endY = row;
+
+                    // // break;
+                    // break ROW;
                 }
             }
         }
 
         if (data.canFix && position.endY > grid.length) {
             data.canFix = false;
-            data.endY = grid.length;
+            data.endY = grid.length - 1;
         }
         return data;
     }
@@ -204,8 +190,15 @@ function WordCloud(parentElement, words) {
 
         if (startX === endX)
             endX++;
-        for (let row = startY; row < endY; row++) {
-            for (let col = startX; col < endX; col++) {
+
+        if (endX === grid[0].length)
+            endX--;
+
+        if (endY === grid.length)
+            endY--;
+
+        for (let row = startY; row <= endY; row++) {
+            for (let col = startX; col <= endX; col++) {
                 grid[row][col] = false;
             }
         }
@@ -360,7 +353,7 @@ function WordCloud(parentElement, words) {
                     break;
             }
             // store the data 
-            info.color = '#000';
+            info.color = getColorForWord(info.word);
 
             // fill the grid
             updateGrid(sX, eX, sY, eY);
@@ -369,6 +362,7 @@ function WordCloud(parentElement, words) {
 
         })
     }
+
 
 
     // actually draw the word
@@ -447,6 +441,10 @@ function WordCloud(parentElement, words) {
         return has;
     }
 
+
+    // let rotate = getRandomNum(24) % 2 === 0 ? true : false;
+    let lastPos = [];
+
     function calcAndDrawWord(word, fontSize = -1) {
         let info = {
             fontSize: fontSize === -1 ? getFontSize(word[1]) : fontSize,
@@ -458,13 +456,22 @@ function WordCloud(parentElement, words) {
         info.width = wordInfo.width + 20;
         info.height = wordInfo.height + 20;
 
-        info.color = "#000";
+        info.color = random_hsl_color(10, 50);
 
         let rotate = getRandomNum(24) % 2 === 0 ? true : false;
+        rotate = !rotate;
 
         info.rotateDeg = rotate ? 90 : 0;
 
         let startPos = getNextFreePosition();
+        if (lastPos) {
+            if (startPos.x === lastPos.x && startPos.y === lastPos.y) {
+                updateGrid(startPos.x, startPos + 1, startPos.y, startPos.y + 1);
+                return;
+            }
+        }
+
+        lastPos = startPos;
         console.log(startPos);
         if (startPos.x === -1) {
             // no spaces 
@@ -493,13 +500,17 @@ function WordCloud(parentElement, words) {
             _position.endY = fix.endY === 0 ? _position.endY : fix.endY;
             // console.log('position', _position);
             let nWidth = _position.endX - _position.startX;
-            if (nWidth === 0) {
+            if (nWidth < 20) {
                 updateGrid(_position.startX, _position.endX, _position.startY, _position.endY);
                 return;
             }
-            let nFSize = getFontSizeForWidth(word[0], nWidth);
-            console.log('nFontSize', nFSize);
-            calcAndDrawWord(word, nFSize);
+            let nFSize = getFontSizeForWidth(word[0], nWidth - 5);
+            if (nFSize > 20) {
+
+                calcAndDrawWord(word, nFSize);
+                console.log('nFontSize', nFSize);
+                return;
+            }
 
         }
         updateGrid(_position.startX, _position.endX, _position.startY, _position.endY);
@@ -535,17 +546,22 @@ function WordCloud(parentElement, words) {
 
         let wordInfo = getWordInfo(word[0], info.fontSize);
 
-        info.width = wordInfo.width + 20;
-        info.height = wordInfo.height + 20;
+        info.width = wordInfo.width + 10;
+        info.height = wordInfo.height + 10;
 
-        info.color = "#000";
+        // get the color for the word
 
-        let rotate = getRandomNum(24) % 2 === 0 ? true : false;
+        // info.color = random_hsl_color(10, 50);
+        info.color = getColorForWord(word[0]);
+        // info.backgroundColor = "orange";
+
+        let rotate = getRandomNum(500) < 250 ? true : false;
 
         info.rotateDeg = rotate ? 90 : 0;
 
         let startPos = getNextFreePosition(info.width);
-        console.log(startPos);
+        let endPos = getNextFreePosition(info.height);
+
         if (startPos.x === -1) {
             // no spaces 
             break;
@@ -571,6 +587,7 @@ function WordCloud(parentElement, words) {
         } else {
             _position.endX = fix.endX;
             _position.endY = fix.endY === 0 ? _position.endY : fix.endY;
+            // console.log(`startPos => ${JSON.stringify(startPos)}, _pos => ${JSON.stringify(_position)}`);
             // console.log('position', _position);
             // break;
         }
@@ -581,8 +598,28 @@ function WordCloud(parentElement, words) {
 
 }
 
+const wordColorList = [];
+function getColorForWord(word) {
+    let wordEntry = wordColorList.filter(w => w.word == word)[0];
+    if (wordEntry && wordEntry.color) {
+        return wordEntry.color;
+    } else {
+        let color = random_hsl_color(10, 50);
+        wordColorList.push({
+            word: word,
+            color: color
+        });
 
+        return color;
+    }
+}
 
+function random_hsl_color(min, max) {
+    return 'hsl(' +
+        (Math.random() * 360).toFixed() + ',' +
+        (Math.random() * 30 + 70).toFixed() + '%,' +
+        (Math.random() * (max - min) + min).toFixed() + '%)';
+}
 
 function getRandomNum(max) {
     return Math.floor(Math.random() * max);
