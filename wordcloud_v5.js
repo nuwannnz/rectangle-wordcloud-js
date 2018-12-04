@@ -14,8 +14,8 @@ function WordCloud(parentElement, words) {
     const gHeight = parentElement.offsetHeight;
 
     // a box is 8x8
-    const bWidth = 30;
-    const bHeight = 20;
+    const bWidth = 8;
+    const bHeight = 8;
 
     //grid containing boxes
     const grid = Array.matrix(Math.floor(gHeight / bHeight), Math.floor(gWidth / bWidth), true);
@@ -26,7 +26,7 @@ function WordCloud(parentElement, words) {
     };
 
     const getFontSize = (weight) => {
-        return (weight * ( 3 + random(settings.weightFactor)));
+        return (weight * (3 + random(settings.weightFactor)));
     }
 
     const getFontSizeForWidth = (word, width, previousFontSize) => {
@@ -80,14 +80,14 @@ function WordCloud(parentElement, words) {
 
 
     let e = document.getElementById('sp');
-    const drawGrid = ()=>{
+    const drawGrid = () => {
         e.innerHTML = '';
         for (let r = 0; r < grid.length; r++) {
             for (let c = 0; c < grid[0].length; c++) {
-                if(grid[r][c]){
+                if (grid[r][c]) {
                     e.innerHTML += '1'
 
-                }else{
+                } else {
                     e.innerHTML += '0'
                 }
             }
@@ -134,37 +134,37 @@ function WordCloud(parentElement, words) {
             y: -1
         };
 
-            // if(eXBox > grid[0].length){
-            //     result.canFit = false;
-            //     eXBox = grid[0].length - 1;
-            // }
+        // if(eXBox > grid[0].length){
+        //     result.canFit = false;
+        //     eXBox = grid[0].length - 1;
+        // }
 
-            // if(eYBox > grid.length ){
-            //     result.canFit = false;
-            //     eYBox = grid.length - 1;
-            // }
+        // if(eYBox > grid.length ){
+        //     result.canFit = false;
+        //     eYBox = grid.length - 1;
+        // }
 
-            for (let r = sYBox; r < eYBox; r++) {
-                for (let c = sXBox; c < eXBox; c++) {
-                    if (!grid[r][c]) {
-                        result.canFit = false;
-                        result.x = c;
-                    }
-                }
-            }
-        
-
-       
-
+        for (let r = sYBox; r < eYBox; r++) {
             for (let c = sXBox; c < eXBox; c++) {
-                for (let r = sYBox; r < eYBox; r++) {
-                    if (!grid[r][c]) {
-                        result.canFit = false;
-                        result.y = r;
-                    }
+                if (!grid[r][c]) {
+                    result.canFit = false;
+                    result.x = c;
                 }
             }
-        
+        }
+
+
+
+
+        for (let c = sXBox; c < eXBox; c++) {
+            for (let r = sYBox; r < eYBox; r++) {
+                if (!grid[r][c]) {
+                    result.canFit = false;
+                    result.y = r;
+                }
+            }
+        }
+
 
         if (!result.canFit && result.x === -1) {
             result.x = eXBox;
@@ -175,6 +175,43 @@ function WordCloud(parentElement, words) {
         }
 
         return result;
+    }
+
+    const findPositionForBox = (wBoxes, hBoxes) => {
+
+        for (let r = 0; r < grid.length; r++) {
+            for (let c = 0; c < grid[0].length; c++) {
+                if (grid[r][c]) {
+                    // check can fit box
+                    if (canFixBox(c, r, wBoxes, hBoxes)) {
+                        return ({
+                            x: c,
+                            y: r
+                        });
+                    }
+                    continue;
+                }
+            }
+        }
+        return null;
+    }
+
+    const canFixBox = (x, y, wBoxes, hBoxes) => {
+        if ((y + hBoxes) > grid.length) {
+            return false;
+        }
+        if ((x + wBoxes) > grid[0].length) {
+            return false;
+        }
+        for (let r = y; r < (y + hBoxes); r++) {
+            for (let c = x; c < (x + wBoxes); c++) {
+                if (!grid[r][c]) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     const drawWord = (info) => {
@@ -194,7 +231,7 @@ function WordCloud(parentElement, words) {
 
         }
 
-        if(info.rotateDeg > 0){
+        if (info.rotateDeg > 0) {
             styles.width = info.height;
             styles.height = info.width;
         }
@@ -312,7 +349,7 @@ function WordCloud(parentElement, words) {
 
             let word = getRandomWord();
 
-            let rotate = random(33) % 2 === 1;           
+            let rotate = random(33) % 2 === 1;
             // rotate = false; 
             let drawInfo = {
                 fontSize: getFontSize(word[1]),
@@ -322,72 +359,60 @@ function WordCloud(parentElement, words) {
 
             };
 
-            
+
             let dimensions = getWordData(drawInfo.word, drawInfo.fontSize);
 
             let position = nextFreeBox();
 
             if (position.x === -1 || position.y === -1) { hasFilled = true; continue; }
-            let wBoxes = Math.floor(dimensions.width / bWidth);
-            let hBoxes = Math.floor(dimensions.height / bHeight);
 
-            let fitInfo = {};
+            // get width and height boxes
+            let wBoxes = rotate ? Math.floor(dimensions.height / bWidth) : Math.floor(dimensions.width / bWidth);
+            let hBoxes = rotate ? Math.floor(dimensions.width / bHeight) : Math.floor(dimensions.height / bHeight);
 
-            if(rotate){
-                fitInfo = canFitWord(position.x, position.y, position.y + hBoxes, position.x + wBoxes);
-            }else{
-                fitInfo = canFitWord(position.x, position.y, position.x + wBoxes, position.y + hBoxes);
+            wBoxes++;
+            hBoxes++;
+            let pos = findPositionForBox(wBoxes, hBoxes);
+
+            while (pos === null) {
+                drawInfo.fontSize -= 2;
+                dimensions = getWordData(drawInfo.word, drawInfo.fontSize);
+                wBoxes = rotate ? Math.floor(dimensions.height / bWidth) : Math.floor(dimensions.width / bWidth);
+                hBoxes = rotate ? Math.floor(dimensions.width / bHeight) : Math.floor(dimensions.height / bHeight);
+                wBoxes++;
+                hBoxes++;
+
+                pos = findPositionForBox(wBoxes, hBoxes);
             }
+
+            if (drawInfo.fontSize < 12) {
+                // don't want to draw
+                updateGrid(pos.y, pos.x, pos.y + hBoxes, pos.x + wBoxes);
+                continue;
+            }
+
+
             drawInfo.position = {
-                top: position.y * bHeight,
-                left: position.x * bWidth
+                top: pos.y * bHeight,
+                left: pos.x * bWidth
             }
 
-          
+            // draw the word
+            drawInfo.width = dimensions.width;
+            drawInfo.height = dimensions.height;
 
-            if (fitInfo.canFit) {
-                // draw the word
-                drawInfo.width = dimensions.width;
-                drawInfo.height = dimensions.height;
-
-                if(rotate){
-                    drawInfo.position.top = drawInfo.position.top - (drawInfo.height / 2);
-                    drawInfo.position.left = drawInfo.position.left + (drawInfo.height / 2);
-                }
-
-                drawWord(drawInfo);
-
-                if(rotate){
-
-                    updateGrid(position.y, position.x, position.x + wBoxes + 1, position.y + hBoxes + 1);
-                }else{
-                    updateGrid(position.y, position.x, position.y + hBoxes + 1, position.x + wBoxes + 1);
-                }
-
-            } else if (fitInfo.y === position.y) {
-                updateGrid(position.y, position.x, fitInfo.y + 1, fitInfo.x);
-            } else {
-                // break;
-                // get the new fontsize 
-                drawInfo.fontSize = getFontSizeForWidth(drawInfo.word, (fitInfo.x - position.x) * bWidth, drawInfo.fontSize);
-                drawInfo.width = (fitInfo.x - position.x) * bWidth;
-                drawInfo.height = (fitInfo.y - position.y) * bHeight;
-                if(rotate){
-                    drawInfo.position.top = drawInfo.position.top - (drawInfo.height / 2);
-                    drawInfo.position.left = drawInfo.position.left + (drawInfo.height / 2);
-                }
-
-                drawWord(drawInfo);
-
-                if(rotate){
-
-                    updateGrid(position.y, position.x, fitInfo.x, fitInfo.y);
-                }else{
-                    updateGrid(position.y, position.x, fitInfo.y, fitInfo.x);
-                }
+            if (rotate) {
+                drawInfo.position.top = drawInfo.position.top - (drawInfo.height / 2);
+                drawInfo.position.left = drawInfo.position.left + (drawInfo.height / 2);
             }
+
+            drawWord(drawInfo);
+
+            updateGrid(pos.y, pos.x, pos.y + hBoxes, pos.x + wBoxes);
+
+
         }
-        
+
     }
 
     fillCorners();
