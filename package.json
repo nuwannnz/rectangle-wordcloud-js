@@ -1,0 +1,20 @@
+{
+  "name": "rectangle-wordcloud",
+  "version": "1.0.0",
+  "description": "A javascipt package to create a rectangular shaped clickable wordcloud",
+  "main": "wordcloud_v5.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/nuwannnz/wordcloud_v4.git"
+  },
+  "keywords": [
+    "wordcloud",
+    "rectangle-wordcloud"
+  ],
+  "author": "Nuwan Karunarathna",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/nuwannnz/wordcloud_v4#readme"
+}
