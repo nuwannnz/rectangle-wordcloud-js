@@ -441,7 +441,7 @@ function random(max) {
     return Math.floor(Math.random() * max);
 }
 
-
+// inspired from wordcloud2.js
 function randomColor(min, max) {
     return 'hsl(' +
         (Math.random() * 360).toFixed() + ',' +
