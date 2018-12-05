@@ -449,4 +449,4 @@ function randomColor(min, max) {
         (Math.random() * (max - min) + min).toFixed() + '%)';
 }
 
-module.exports = WordCloud;
+// module.exports = WordCloud;
