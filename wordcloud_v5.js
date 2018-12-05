@@ -1,7 +1,7 @@
 
 
 
-function WordCloud(parentElement, words) {
+function WordCloud(parentElement, words, _settings) {
 
     const wordList = words.map(w => {
         w[2] = randomColor(10, 60);
@@ -25,29 +25,15 @@ function WordCloud(parentElement, words) {
         minFontSize: 8
     };
 
+    for (const key in _settings) {
+        settings[key] = _settings[key];
+    }
+
     const getFontSize = (weight) => {
         return (weight * (3 + random(settings.weightFactor)));
     }
 
-    const getFontSizeForWidth = (word, width, previousFontSize) => {
-        let c = document.createElement('canvas');
-        let fctx = c.getContext('2d', { willReadFrequently: true });
 
-        // get a random font size
-        let fs = previousFontSize;
-        fctx.font = `${fs}px sans-serif`;
-        let nWidth = Math.floor(fctx.measureText(word).width);
-
-        if (nWidth < width) { return fs };
-
-        while (nWidth > width) {
-            fs -= 10;
-            fctx.font = `${fs}px sans-serif`;
-            nWidth = Math.floor(fctx.measureText(word).width);
-        }
-
-        return fs;
-    }
 
     const getWordData = (word, fontSize) => {
         let c = document.createElement('canvas');
@@ -79,21 +65,7 @@ function WordCloud(parentElement, words) {
     }
 
 
-    let e = document.getElementById('sp');
-    const drawGrid = () => {
-        e.innerHTML = '';
-        for (let r = 0; r < grid.length; r++) {
-            for (let c = 0; c < grid[0].length; c++) {
-                if (grid[r][c]) {
-                    e.innerHTML += '1'
 
-                } else {
-                    e.innerHTML += '0'
-                }
-            }
-            e.innerHTML += '<br>';
-        }
-    }
 
     const updateGrid = (sY, sX, eY, eX) => {
         for (let r = sY; r < eY; r++) {
@@ -126,56 +98,6 @@ function WordCloud(parentElement, words) {
         return boxCord;
     }
 
-    const canFitWord = (sXBox, sYBox, eXBox, eYBox) => {
-
-        let result = {
-            canFit: true,
-            x: -1,
-            y: -1
-        };
-
-        // if(eXBox > grid[0].length){
-        //     result.canFit = false;
-        //     eXBox = grid[0].length - 1;
-        // }
-
-        // if(eYBox > grid.length ){
-        //     result.canFit = false;
-        //     eYBox = grid.length - 1;
-        // }
-
-        for (let r = sYBox; r < eYBox; r++) {
-            for (let c = sXBox; c < eXBox; c++) {
-                if (!grid[r][c]) {
-                    result.canFit = false;
-                    result.x = c;
-                }
-            }
-        }
-
-
-
-
-        for (let c = sXBox; c < eXBox; c++) {
-            for (let r = sYBox; r < eYBox; r++) {
-                if (!grid[r][c]) {
-                    result.canFit = false;
-                    result.y = r;
-                }
-            }
-        }
-
-
-        if (!result.canFit && result.x === -1) {
-            result.x = eXBox;
-        }
-
-        if (!result.canFit && result.y === -1) {
-            result.y = eYBox + 1;
-        }
-
-        return result;
-    }
 
     const findPositionForBox = (wBoxes, hBoxes) => {
 
@@ -214,10 +136,89 @@ function WordCloud(parentElement, words) {
         return true;
     }
 
+    const onMouseEnterSpan = (e) => {
+        if (spanClicked) return;
+        let colorEntry = spanColorList.find(s => s.spans.indexOf(e.target.id) !== -1);
+
+        if (!colorEntry) { return; }
+
+        colorEntry.spans.forEach(spanId => document.getElementById(spanId).style.color = colorEntry.color);
+    }
+
+    const onMouseLeaveSpan = (e) => {
+        if (spanClicked) return;
+        let colorEntry = spanColorList.find(s => s.spans.indexOf(e.target.id) !== -1);
+
+        if (!colorEntry) { return; }
+
+        colorEntry.spans.forEach(spanId => document.getElementById(spanId).style.color = '#aaa');
+    }
+
+    let spanClicked = false;
+    let clickedId = -1;
+
+    const onClickSpan = (e) => {
+
+
+        if (settings.hoverEffects) {
+
+            let colorEntry = spanColorList.find(s => s.spans.indexOf(e.target.id) !== -1);
+
+            if (!colorEntry) { return; }
+
+            if (e.target.classList.contains('w-clicked')) {
+                colorEntry.spans.forEach(spanId => document.getElementById(spanId).style.color = '#aaa');
+                e.target.classList.remove('w-clicked');
+                spanClicked = false;
+            } else {
+                e.target.classList.add('w-clicked');
+
+                colorEntry.spans.forEach(spanId => {
+                    if (spanId !== e.target.id) {
+
+                        document.getElementById(spanId).style.color = '#aaa'
+                    }
+                });
+                spanClicked = true;
+                clickedId = e.target.id;
+            }
+        }
+
+        if (settings.clickListener) {
+
+
+            settings.clickListener(e.target);
+        }
+    }
+
+    const spanColorList = [];
+
+    let lastId = 1;
     const drawWord = (info) => {
 
         let span = document.createElement('SPAN');
         span.innerHTML = info.word;
+        span.id = `w${lastId++}`;
+
+        if (settings.hoverEffects) {
+            let colorEntry = spanColorList.find(s => s.color === info.color);
+
+            if (colorEntry) {
+                spanColorList[spanColorList.indexOf(colorEntry)].spans.push(span.id);
+            } else {
+                spanColorList.push({
+                    color: info.color,
+                    spans: [
+                        span.id
+                    ]
+                });
+            }
+
+
+            span.addEventListener('mouseenter', onMouseEnterSpan);
+            span.addEventListener('mouseleave', onMouseLeaveSpan);
+        }
+        span.addEventListener('click', onClickSpan);
 
         let styles = {
             display: 'inline-block',
@@ -225,9 +226,10 @@ function WordCloud(parentElement, words) {
             height: `${info.height}px`,
             fontSize: `${info.fontSize}px`,
             position: 'absolute',
-            color: info.color,
+            color: settings.hoverEffects ? '#aaa' : info.color,
             transform: `rotate(${info.rotateDeg}deg)`,
             transformOrigin: 'left',
+            cursor: 'pointer'
 
         }
 

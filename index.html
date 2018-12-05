@@ -50,7 +50,7 @@
 
       //       let _wordCloud1 = new Promise((r) => { -->
 
-      new WordCloud(document.getElementById('w1'), wordList);
+      new WordCloud(document.getElementById('w1'), wordList, { hoverEffects: true, clickListener: (span) => { console.log(span.id) } });
       // new WordCloud(document.getElementById('w2'), wordList);
       //   r();
       // });
