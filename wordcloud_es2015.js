@@ -377,7 +377,7 @@ function WordCloud(parentElement, words, _settings) {
 
             while (pos === null) {
                 drawInfo.fontSize -= 2;
-                if (drawInfo.fontSize < 5) {
+                if (drawInfo.fontSize < 0) {
                     continue FILLING;
                 }
                 dimensions = getWordData(drawInfo.word, drawInfo.fontSize);
