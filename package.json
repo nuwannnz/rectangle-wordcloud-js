@@ -1,6 +1,6 @@
 {
   "name": "rectangle-wordcloud",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A javascipt package to create a rectangular shaped clickable wordcloud",
   "main": "wordcloud_es2015.js",
   "scripts": {

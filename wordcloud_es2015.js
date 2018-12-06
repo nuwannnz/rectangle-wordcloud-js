@@ -340,7 +340,7 @@ function WordCloud(parentElement, words, _settings) {
 
     var fillGrid = function fillGrid() {
 
-        while (!hasFilled) {
+        FILLING: while (!hasFilled) {
             // get a word
             // check can fix
             // if not resize word
@@ -377,6 +377,9 @@ function WordCloud(parentElement, words, _settings) {
 
             while (pos === null) {
                 drawInfo.fontSize -= 2;
+                if (drawInfo.fontSize < 5) {
+                    continue FILLING;
+                }
                 dimensions = getWordData(drawInfo.word, drawInfo.fontSize);
                 wBoxes = rotate ? Math.floor(dimensions.height / bWidth) : Math.floor(dimensions.width / bWidth);
                 hBoxes = rotate ? Math.floor(dimensions.width / bHeight) : Math.floor(dimensions.height / bHeight);
