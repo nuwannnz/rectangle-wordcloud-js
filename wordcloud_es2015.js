@@ -419,7 +419,7 @@ Array.matrix = function (numRows, numCols, initial) {
     var arr = [];
 
     for (var i = 0; i < numRows; i++) {
-        let col = [];
+        var col = [];
         for (var j = 0; j < numCols; j++) {
             col[j] = initial;
         }
