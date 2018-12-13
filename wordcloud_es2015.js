@@ -2,10 +2,16 @@
 
 function WordCloud(parentElement, words, _settings) {
 
-    var wordList = words.map(function (w) {
-        w[2] = randomColor(10, 60);
-        return w;
-    });
+    var wordList = [];
+
+
+    words.map(function (wordEntry) {
+
+        wordEntry.words.map(function (w) {
+            wordList.push([w[0], w[1], wordEntry.color]);
+        })
+
+    })
 
     var usedWords = [];
 
@@ -159,11 +165,11 @@ function WordCloud(parentElement, words, _settings) {
         });
     };
 
-    var spanClicked = false;
-    var clickedId = -1;
+    // var clickedId = -1;
+    var clickedSpans = [];
 
     var onClickSpan = function onClickSpan(e) {
-
+        var selected = false;
         if (settings.hoverEffects) {
 
             var colorEntry = spanColorList.find(function (s) {
@@ -177,35 +183,64 @@ function WordCloud(parentElement, words, _settings) {
             if (e.target.classList.contains('w-clicked')) {
                 // deselect keyword
                 colorEntry.spans.forEach(function (spanId) {
-                    return document.getElementById(spanId).style.color = '#aaa';
-                });
-                e.target.classList.remove('w-clicked');
-                spanClicked = false;
+                    var element = document.getElementById(spanId);
+                    if (!element.classList.contains('w-clicked')) {
 
-                if (settings.clickListener) {
-
-                    settings.clickListener(e.target, false);
-                }
-
-            } else {
-                // select keyword
-                e.target.classList.add('w-clicked');
-
-                colorEntry.spans.forEach(function (spanId) {
-                    if (spanId !== e.target.id) {
-
-                        document.getElementById(spanId).style.color = '#aaa';
+                        element.style.color = '#aaa';
                     }
                 });
-                spanClicked = true;
-                clickedId = e.target.id;
-                if (settings.clickListener) {
+                e.target.classList.remove('w-clicked');
 
-                    settings.clickListener(e.target, true);
+
+                var _clickedSpan = clickedSpans.find(function (cs) { return cs.word === target.innerHTML && cs.color === e.target.style.color });
+                clickedSpans.splice(clickedSpans.indexOf(_clickedSpan), 1);
+                selected = false;
+
+            } else {
+                // check whether we have the same word with same color
+                // if then deselect the word
+                // otherwise select the word
+                var _clickedSpan = clickedSpans.find(function (cs) { return cs.word === e.target.innerHTML && cs.color === e.target.style.color });
+
+                if (_clickedSpan) {
+                    // deselect keyword
+                    document.getElementById(_clickedSpan.spanId).classList.remove('w-clicked');
+
+                    colorEntry.spans.forEach(function (spanId) {
+                        var element = document.getElementById(spanId);
+                        if (!element.classList.contains('w-clicked'))
+                            document.getElementById(spanId).style.color = '#aaa';
+                    });
+
+                    clickedSpans.splice(clickedSpans.indexOf(_clickedSpan), 1);
+
+                    selected = false;
+                } else {
+
+
+                    // select keyword
+                    e.target.classList.add('w-clicked');
+
+                    clickedSpans.push({ spanId: e.target.id, word: e.target.innerHTML, color: e.target.style.color });
+
+                    colorEntry.spans.forEach(function (spanId) {
+                        var element = document.getElementById(spanId);
+                        if (!element.classList.contains('w-clicked')) {
+
+                            element.style.color = '#aaa';
+                        }
+                    });
+
+                    selected = true;
                 }
+                // clickedId = e.target.id;
             }
         }
 
+        if (settings.clickListener) {
+
+            settings.clickListener(e.target, selected);
+        }
 
     };
 
