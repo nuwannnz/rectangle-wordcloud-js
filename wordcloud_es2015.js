@@ -129,7 +129,7 @@ function WordCloud(parentElement, words, _settings) {
     };
 
     var onMouseEnterSpan = function onMouseEnterSpan(e) {
-        if (spanClicked) return;
+        // if (spanClicked) return;
         var colorEntry = spanColorList.find(function (s) {
             return s.spans.indexOf(e.target.id) !== -1;
         });
@@ -139,12 +139,12 @@ function WordCloud(parentElement, words, _settings) {
         }
 
         colorEntry.spans.forEach(function (spanId) {
-            return document.getElementById(spanId).style.color = colorEntry.color;
+            document.getElementById(spanId).style.color = colorEntry.color;
         });
     };
 
     var onMouseLeaveSpan = function onMouseLeaveSpan(e) {
-        if (spanClicked) return;
+        // if (spanClicked) return;
         var colorEntry = spanColorList.find(function (s) {
             return s.spans.indexOf(e.target.id) !== -1;
         });
@@ -154,7 +154,8 @@ function WordCloud(parentElement, words, _settings) {
         }
 
         colorEntry.spans.forEach(function (spanId) {
-            return document.getElementById(spanId).style.color = '#aaa';
+            if (!document.getElementById(spanId).classList.contains('w-clicked'))
+                document.getElementById(spanId).style.color = '#aaa';
         });
     };
 
@@ -174,12 +175,20 @@ function WordCloud(parentElement, words, _settings) {
             }
 
             if (e.target.classList.contains('w-clicked')) {
+                // deselect keyword
                 colorEntry.spans.forEach(function (spanId) {
                     return document.getElementById(spanId).style.color = '#aaa';
                 });
                 e.target.classList.remove('w-clicked');
                 spanClicked = false;
+
+                if (settings.clickListener) {
+
+                    settings.clickListener(e.target, false);
+                }
+
             } else {
+                // select keyword
                 e.target.classList.add('w-clicked');
 
                 colorEntry.spans.forEach(function (spanId) {
@@ -190,13 +199,14 @@ function WordCloud(parentElement, words, _settings) {
                 });
                 spanClicked = true;
                 clickedId = e.target.id;
+                if (settings.clickListener) {
+
+                    settings.clickListener(e.target, true);
+                }
             }
         }
 
-        if (settings.clickListener) {
 
-            settings.clickListener(e.target);
-        }
     };
 
     var spanColorList = [];
