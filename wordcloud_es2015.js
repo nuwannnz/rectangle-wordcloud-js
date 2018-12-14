@@ -3,14 +3,17 @@
 function WordCloud(parentElement, words, _settings) {
 
     var wordList = [];
-
+    // wordList = words.map(function (w) {
+    //     w[2] = randomColor(10, 60);
+    //     return w;
+    // });
 
     words.map(function (wordEntry) {
-
+        var _words = []
         wordEntry.words.map(function (w) {
             wordList.push([w[0], w[1], wordEntry.color]);
         })
-
+        // wordList.push(_words);
     })
 
     var usedWords = [];
@@ -192,7 +195,7 @@ function WordCloud(parentElement, words, _settings) {
                 e.target.classList.remove('w-clicked');
 
 
-                var _clickedSpan = clickedSpans.find(function (cs) { return cs.word === target.innerHTML && cs.color === e.target.style.color });
+                var _clickedSpan = clickedSpans.find(function (cs) { return cs.word === e.target.innerHTML && cs.color === e.target.style.color });
                 clickedSpans.splice(clickedSpans.indexOf(_clickedSpan), 1);
                 selected = false;
 
