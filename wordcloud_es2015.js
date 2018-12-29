@@ -1,6 +1,6 @@
 'use strict';
 
-function WordCloud(parentElement, words, _settings) {
+function WordCloud(parentElement, words, _settings, initCallback) {
 
     var wordList = [];
     // wordList = words.map(function (w) {
@@ -170,6 +170,26 @@ function WordCloud(parentElement, words, _settings) {
 
     // var clickedId = -1;
     var clickedSpans = [];
+
+    var deselectSpan = function deselectSpan(spanId) {
+
+        var colorEntry = spanColorList.find(function (s) {
+            return s.spans.indexOf(spanId) !== -1;
+        });
+        var span = document.getElementById(spanId);
+
+        if (!colorEntry || !span) { return; }
+
+        span.style.color = '#aaa';
+        span.classList.remove('w-clicked');
+
+        var _clickedSpan = find(function (cs) {
+            return cs.word === span.innerText && cs.color === span.style.color;
+        })
+
+        clickedSpans.splice(clickedSpans.indexOf(_clickedSpan), 1);
+
+    }
 
     var onClickSpan = function onClickSpan(e) {
         var selected = false;
@@ -464,6 +484,8 @@ function WordCloud(parentElement, words, _settings) {
 
     fillCorners();
     fillGrid();
+    initCallback(deselectSpan);
+
 };
 
 Array.matrix = function (numRows, numCols, initial) {
